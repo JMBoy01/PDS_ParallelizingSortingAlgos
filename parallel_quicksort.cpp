@@ -1,5 +1,5 @@
 // How to compile: g++ -g -Wall -fopenmp -o parallel_quicksort parallel_quicksort.cpp
-// How to run: ./parallel_quicksort.exe file_path/file.dat
+// How to run: ./parallel_quicksort.exe "file_path/file.dat"
 
 #include <stdio.h>
 #include <vector>
