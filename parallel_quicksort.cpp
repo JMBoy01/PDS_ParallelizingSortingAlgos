@@ -103,18 +103,17 @@ void print_vector(vector<int>& vector)
 }
 
 int main(int argc, char* argv[]) {
-    vector<int> test_vector;
+    vector<int> test_vector{};
     std::string file_path;
 
     if (argc > 1) {
-        file_path = argv[1]; // Eerste argument (argv[0] is de programmanaam)
+        file_path = argv[1]; // Eerste argument (argv[0] is de exe)
         // std::cout << file_path << std::endl;
-    }
-
+    } // Lees file in als er een file path gegeven is
     if (!file_path.empty()) {
         test_vector = load_dataset(file_path);
-    }
-    else {
+    } // Als de vector nog leeg is na het inlezen dan maak een random vector
+    if (test_vector.empty()) {
         // test_vector = generate_dataset(100000);
         // shuffle_dataset(test_vector);
 
