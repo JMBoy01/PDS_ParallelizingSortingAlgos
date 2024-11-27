@@ -1,9 +1,13 @@
+// How to compile: g++ -o quicksort quicksort.cpp
+// How to run: ./parallel_quicksort.exe "file_path/file.dat"
+
 #include <stdio.h>
 #include <vector>
+#include "data_manager.h"
 
 using namespace std;
 
-void Sort(vector<int>& list, int left, int right) {
+void sort(vector<int>& list, int left, int right) {
     int L = left;
     int R = right;
     int middleElement = list[(left + right) / 2];
@@ -26,34 +30,72 @@ void Sort(vector<int>& list, int left, int right) {
     } while (L < R);
 
     if (left < R) {
-        Sort(list, left, R);
+        sort(list, left, R);
     }
     if (L < right) {
-        Sort(list, L, right);
+        sort(list, L, right);
     }
 }
 
-void QuickSort(vector<int>& list) {
-    Sort(list, 0, list.size() - 1);  // Array, left en right meegeven
+void quicksort(vector<int>& list) {
+    sort(list, 0, list.size() - 1);  // Array, left en right meegeven
 }
 
-int main()
+bool check_sorted(vector<int>& vector, int& error_amount)
 {
-    vector<int> list{
-        56, 23, 78, 12, 45, 67, 89, 34, 92, 11, 38, 49, 26, 90, 72, 6, 83, 39, 18, 59,
-        99, 3, 87, 65, 21, 43, 50, 29, 74, 94, 70, 10, 81, 55, 66, 48, 77, 53, 28, 7,
-        96, 2, 60, 19, 35, 62, 85, 31, 100, 41, 37, 73, 1, 84, 5, 63, 17, 97, 25, 76,
-        4, 61, 15, 69, 52, 91, 33, 40, 20, 75, 24, 64, 93, 47, 27, 68, 9, 95, 42, 8,
-        82, 30, 13, 57, 44, 22, 80, 46, 14, 88, 51, 86, 58, 36, 16, 98, 71, 54, 79
-    };
+    bool is_sorted = true;
 
-    QuickSort(list);
+    #pragma omp parallel for shared(is_sorted, error_amount)
+    for (int i = 1; i < static_cast<int>(vector.size()); i++) {
+        if (vector[i] < vector[i-1]) {
+            is_sorted = false;
 
-    printf("list: [");
-    for (int val : list) {
-        printf("%d, ", val);
+            error_amount++;
+            // printf("error at index %d", i);
+        }
     }
-    printf("]");
+
+    return is_sorted;
+}
+
+void print_vector(vector<int>& vector)
+{
+    printf("[");
+    for (auto val : vector) {
+        printf("%d,", val);
+    }
+    printf("]\n");
+}
+
+int main(int argc, char* argv[]) {
+    vector<int> test_vector{};
+    std::string file_path;
+
+    if (argc > 1) {
+        file_path = argv[1]; // Eerste argument (argv[0] is de exe)
+        // std::cout << file_path << std::endl;
+    } // Lees file in als er een file path gegeven is
+    if (!file_path.empty()) {
+        test_vector = load_dataset(file_path);
+    } // Als de vector nog leeg is na het inlezen dan maak een random vector
+    if (test_vector.empty()) {
+        // test_vector = generate_dataset(100000);
+        // shuffle_dataset(test_vector);
+
+        test_vector = generate_random_dataset(100000);
+
+        save_dataset(test_vector, "generated_dataset.dat");
+    }
+
+    quicksort(test_vector);
+
+    int error_amount = 0;
+    bool result = check_sorted(test_vector, error_amount);
+
+    printf("\nIs array sorted: %d\nAmount of errors: %d\n", result, error_amount); // 1 = true -> correct gesorteerd, 0 = false -> niet correct gesorteerd
+
+    // printf("test_vector: ");
+    // print_vector(test_vector);
 
     return 0;
 }

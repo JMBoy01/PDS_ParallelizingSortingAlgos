@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void Sort(vector<int>& vector, int left, int right) {
+void sort(vector<int>& vector, int left, int right) {
     int L = left;
     int R = right;
     int middleElement = vector[(left + right) / 2];
@@ -34,7 +34,7 @@ void Sort(vector<int>& vector, int left, int right) {
     }
 
     // Only make extra threads if sub array is large enough in size
-    int threshold = 25;
+    int threshold = 3;
     if (left < R) {
         // if (R - left > threshold) {
         //     printf("Making extra thread -> R - left > threshold: %d - %d = %d > %d\n", R, left, R-left, threshold);
@@ -43,11 +43,11 @@ void Sort(vector<int>& vector, int left, int right) {
         if (R - left > threshold) {
             #pragma omp task shared(vector)
             {
-                Sort(vector, left, R);
+                sort(vector, left, R);
             }
         }
         else {
-            Sort(vector, left, R);
+            sort(vector, left, R);
         }
     }
     if (L < right) {
@@ -58,29 +58,30 @@ void Sort(vector<int>& vector, int left, int right) {
         if (right - L > threshold) {
             #pragma omp task shared(vector)
             {
-                Sort(vector, L, right);
+                sort(vector, L, right);
             }
         }
         else {
-            Sort(vector, L, right);
+            sort(vector, L, right);
         }
     }
 }
 
-void QuickSort(vector<int>& vector) {
+void quicksort(vector<int>& vector) {
     #pragma omp parallel
     {
         #pragma omp single  // Start by making 1 thread
         {
-            Sort(vector, 0, vector.size() - 1);
+            sort(vector, 0, vector.size() - 1);
         }
     }
 }
 
-bool check_sorted(vector<int>& vector, int& error_amount, int start_value = 0)
+bool check_sorted(vector<int>& vector, int& error_amount)
 {
     bool is_sorted = true;
 
+    #pragma omp parallel for shared(is_sorted, error_amount)
     for (int i = 1; i < static_cast<int>(vector.size()); i++) {
         if (vector[i] < vector[i-1]) {
             is_sorted = false;
@@ -122,7 +123,7 @@ int main(int argc, char* argv[]) {
         save_dataset(test_vector, "generated_dataset.dat");
     }
 
-    QuickSort(test_vector);
+    quicksort(test_vector);
 
     int error_amount = 0;
     bool result = check_sorted(test_vector, error_amount);
