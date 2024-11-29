@@ -1,3 +1,5 @@
 *.exe
 
 .vscode/
+
+dataset_100miljoen.dat

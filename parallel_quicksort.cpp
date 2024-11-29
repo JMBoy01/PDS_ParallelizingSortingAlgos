@@ -65,6 +65,8 @@ void sort(vector<int>& vector, int left, int right) {
             sort(vector, L, right);
         }
     }
+
+    #pragma omp taskwait
 }
 
 void quicksort(vector<int>& vector) {
@@ -118,7 +120,7 @@ int main(int argc, char* argv[]) {
         // test_vector = generate_dataset(100000);
         // shuffle_dataset(test_vector);
 
-        test_vector = generate_random_dataset(100000);
+        test_vector = generate_random_dataset(100000000);
 
         save_dataset(test_vector, "generated_dataset.dat");
     }
