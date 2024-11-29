@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void sort(vector<int>& vector, int left, int right) {
+void sort(vector<int>& vector, int left, int right, int& threshold) {
     int L = left;
     int R = right;
     int middleElement = vector[(left + right) / 2];
@@ -34,7 +34,6 @@ void sort(vector<int>& vector, int left, int right) {
     }
 
     // Only make extra threads if sub array is large enough in size
-    int threshold = 3;
     if (left < R) {
         // if (R - left > threshold) {
         //     printf("Making extra thread -> R - left > threshold: %d - %d = %d > %d\n", R, left, R-left, threshold);
@@ -43,11 +42,11 @@ void sort(vector<int>& vector, int left, int right) {
         if (R - left > threshold) {
             #pragma omp task shared(vector)
             {
-                sort(vector, left, R);
+                sort(vector, left, R, threshold);
             }
         }
         else {
-            sort(vector, left, R);
+            sort(vector, left, R, threshold);
         }
     }
     if (L < right) {
@@ -58,23 +57,23 @@ void sort(vector<int>& vector, int left, int right) {
         if (right - L > threshold) {
             #pragma omp task shared(vector)
             {
-                sort(vector, L, right);
+                sort(vector, L, right, threshold);
             }
         }
         else {
-            sort(vector, L, right);
+            sort(vector, L, right, threshold);
         }
     }
 
     #pragma omp taskwait
 }
 
-void quicksort(vector<int>& vector) {
+void quicksort(vector<int>& vector, int& threshold) {
     #pragma omp parallel
     {
         #pragma omp single  // Start by making 1 thread
         {
-            sort(vector, 0, vector.size() - 1);
+            sort(vector, 0, vector.size() - 1, threshold);
         }
     }
 }
@@ -120,12 +119,14 @@ int main(int argc, char* argv[]) {
         // test_vector = generate_dataset(100000);
         // shuffle_dataset(test_vector);
 
-        test_vector = generate_random_dataset(100000000);
+        test_vector = generate_random_dataset(100000);
 
         save_dataset(test_vector, "generated_dataset.dat");
     }
 
-    quicksort(test_vector);
+    int threshold = 25;
+
+    quicksort(test_vector, threshold);
 
     int error_amount = 0;
     bool result = check_sorted(test_vector, error_amount);
