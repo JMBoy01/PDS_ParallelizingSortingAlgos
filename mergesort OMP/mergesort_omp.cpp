@@ -99,8 +99,9 @@ int main() {
     //int max_depth = 6;
     int max_depth = 3;
 
-    std::vector<int> sizes = {1000, 10000, 100000, 1000000};
- 
+    //std::vector<int> sizes = {1000, 10000, 100000, 1000000};
+    std::vector<long long> sizes = {100000000, 500000000, 1000000000, 2000000000, 5000000000}; // 0.4 GB, 2GB, 4 GB, 8GB, 20GB
+
     for (int size : sizes) {
         std::vector<int> dataset = generate_random_dataset(size);
         shuffle_dataset(dataset);
@@ -113,9 +114,9 @@ int main() {
         sequentialMergeSort(seq_array);
         auto end = std::chrono::high_resolution_clock::now();
         double seq_time = std::chrono::duration<double>(end - start).count();
-        std::cout << "Sequential Merge Sort Time: " << seq_time << " seconds" << std::endl;
+        std::cout << "Sequential mergesort time: " << seq_time << " seconds" << std::endl;
         if (!is_sorted(seq_array)) {
-            std::cerr << "Error: Sequential Merge Sort failed!" << std::endl;
+            std::cerr << "Error: Sequential mergesort failed!" << std::endl;
             return -1;
         }
 
