@@ -95,12 +95,11 @@ void parallelMergeSortParallelMerge(std::vector<int>& array, int depth, int max_
 }
 
 int main() {
-    //omp_set_num_threads(72);
-    //int max_depth = 6;
-    int max_depth = 3;
-
+    omp_set_num_threads(36);
+    int max_depth = 5;
+    //int max_depth = 3;
     //std::vector<int> sizes = {1000, 10000, 100000, 1000000};
-    std::vector<long long> sizes = {100000000, 500000000, 1000000000, 2000000000, 5000000000}; // 0.4 GB, 2GB, 4 GB, 8GB, 20GB
+    std::vector<int> sizes = {25000000 ,50000000 ,100000000, 250000000, 500000000, 1000000000}; //0.1GB, 0.2 GB, 0.4 GB, 1 GB, 2GB, 4 GB
 
     for (int size : sizes) {
         std::vector<int> dataset = generate_random_dataset(size);
@@ -119,6 +118,7 @@ int main() {
             std::cerr << "Error: Sequential mergesort failed!" << std::endl;
             return -1;
         }
+        seq_array = {0};
 
         // Parallel mergesort (Sequential merge)
         std::vector<int> parallel_seq_array = dataset;
@@ -131,6 +131,7 @@ int main() {
             std::cerr << "Error: parallel mergesort (sequential merge) failed!" << std::endl;
             return -1;
         }
+        parallel_seq_array = {0};
 
         // Parallel mergesort (Parallel merge)
         std::vector<int> parallel_par_array = dataset;
@@ -143,6 +144,7 @@ int main() {
             std::cerr << "Error: parallel mergesort (parallel merge) failed!" << std::endl;
             return -1;
         }
+        parallel_par_array = {0};
 
         std::cout << "-----------------------------" << std::endl;
     }
