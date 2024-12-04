@@ -1,0 +1,21 @@
+Voorbeeld parallelmerge:
+
+2 gesorteerde lijsten: left[2,5,8,12] & right[3,7,10,14] -> 8 elementen -> result[8 elementen]
+
+vb. We hebben 2 threads: 
+
+STAP 1: elke thread krijgt zijn specifieke deel van de resultarray: thread 1 van element 0 tot 4; thread 2 van 4 tot 8
+
+STAP 2: elke thread bepaalt waar zijn deel start en eindigt in left & right array: 
+	- voor thread 1: binary search vindt de 4 kleinste elementen van left & right, daarna merged hij die [2, 5] en [3, 7] in element 0 	tot 3 van result array
+	- thread 2 doet binary search voor de anderen elementen en merged deze in het 2de deel van de result array
+
+STAP 3: Elke thread gaat nu onafhankelijk van elkaar mergen, dus thread 1 merged left[0:2] = [2, 5] & right[0:2] = [3, 7]
+
+	vergelijk 2 en 3 -> 2 naar result array element 0
+	vergelijk 5 en 3 -> 3 naar result array element 1
+	…
+
+Laatste stap: wanneer beide threads klaar zijn gebeurd er nog 1 merge, en krijg je de juiste resultarray
+	
+

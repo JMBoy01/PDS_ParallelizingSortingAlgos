@@ -99,7 +99,7 @@ int main() {
     int max_depth = 5;
     //int max_depth = 3;
     //std::vector<int> sizes = {1000, 10000, 100000, 1000000};
-    std::vector<int> sizes = {25000000 ,50000000 ,100000000, 250000000, 500000000, 1000000000}; //0.1GB, 0.2 GB, 0.4 GB, 1 GB, 2GB, 4 GB
+    std::vector<int> sizes = {25000000 ,50000000 ,100000000, 250000000, 500000000}; //0.1GB, 0.2 GB, 0.4 GB, 1 GB, 2GB
 
     for (int size : sizes) {
         std::vector<int> dataset = generate_random_dataset(size);
