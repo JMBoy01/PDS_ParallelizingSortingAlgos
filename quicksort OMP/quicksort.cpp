@@ -1,5 +1,5 @@
-// How to compile local: g++ -g -Wall -fopenmp -o quicksort quicksort.cpp
-// How to compile VSC: g++ -fopenmp -o quicksort quicksort.cpp
+// How to compile local: g++ -g -Wall -fopenmp -o quicksort main.cpp
+// How to compile VSC: g++ -fopenmp -o main main.cpp
 
 #include <iostream>
 #include <vector>
@@ -116,7 +116,7 @@ void parallel_quicksort(vector<int>& vector, int& threshold) {
 }
 
 // OTHER
-void write_results_to_file(std::vector<long long>& sizes, std::vector<double>& serial_times, std::vector<double>& parallel_times)
+void write_results_to_file(std::vector<int>& sizes, std::vector<double>& serial_times, std::vector<double>& parallel_times)
 {
     string filename = "output.txt";
     std::ofstream outfile;
@@ -131,6 +131,8 @@ void write_results_to_file(std::vector<long long>& sizes, std::vector<double>& s
     
     for (int i = 0; i < static_cast<int>(sizes.size()); i++) {
         outfile << sizes[i] << "\t" << serial_times[i] << "\t" << parallel_times[i] << "\n";
+        
+        cout << sizes[i] << "\t" << serial_times[i] << "\t" << parallel_times[i] << "\n";
     }
 
     outfile.close();
@@ -149,8 +151,10 @@ bool is_sorted(vector<int>& vector)
 
 // MAIN
 int main() {
-    // std::vector<long long> sizes = {100000000, 500000000, 1000000000, 2000000000, 5000000000}; // 0.4 GB, 2GB, 4 GB, 8GB, 20GB
-    std::vector<long long> sizes = {10000, 50000, 100000, 200000, 500000};
+    omp_set_num_threads(72);
+    
+    std::vector<int> sizes = {25000000 ,50000000 ,100000000, 250000000, 500000000}; //0.1GB, 0.2 GB, 0.4 GB, 1 GB, 2GB
+    // std::vector<long long> sizes = {10000, 50000, 100000, 200000, 500000};
     std::vector<double> serial_times{};
     std::vector<double> parallel_times{};
 
