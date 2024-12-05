@@ -1,5 +1,5 @@
-// How to compile local: g++ -g -Wall -fopenmp -o quicksort main.cpp
-// How to compile VSC: g++ -fopenmp -o main main.cpp
+// How to compile local: g++ -g -Wall -fopenmp -o quicksort quicksort.cpp
+// How to compile VSC: g++ -fopenmp -o quicksort quicksort.cpp
 
 #include <iostream>
 #include <vector>
@@ -28,6 +28,7 @@ void serial_sort(vector<int>& list, int left, int right) {
             int leftElement = list[L];
             list[L] = list[R];
             list[R] = leftElement;
+
             L++;
             R--;
         }
@@ -54,7 +55,7 @@ void parallel_sort(vector<int>& vector, int left, int right, int& threshold) {
     // Dit gaat ervoor zorgen dat left en right samen niet boven de bit limiet van een int gaat.
     // int middleElement = vector[left + (right - left) / 2];
 
-    while (L < R) {
+    while (L <= R) {
 
         while (vector[L] < middleElement) {
             L++;
@@ -63,11 +64,17 @@ void parallel_sort(vector<int>& vector, int left, int right, int& threshold) {
             R--;
         }
 
+        // #pragma omp critical
+        // {
         if (L <= R) {
-            std::swap(vector[L], vector[R]);
+            int leftElement = vector[L];
+            vector[L] = vector[R];
+            vector[R] = leftElement;
+
             L++;
             R--;
         }
+        // }
     }
 
     // Only make extra threads if sub array is large enough in size
@@ -77,7 +84,7 @@ void parallel_sort(vector<int>& vector, int left, int right, int& threshold) {
         // }
 
         if (R - left > threshold) {
-            #pragma omp task shared(vector)
+            #pragma omp task shared(vector) //firstprivate(left, R)
             {
                 parallel_sort(vector, left, R, threshold);
             }
@@ -92,7 +99,7 @@ void parallel_sort(vector<int>& vector, int left, int right, int& threshold) {
         // }
 
         if (right - L > threshold) {
-            #pragma omp task shared(vector)
+            #pragma omp task shared(vector) //firstprivate(L, right)
             {
                 parallel_sort(vector, L, right, threshold);
             }
@@ -101,17 +108,14 @@ void parallel_sort(vector<int>& vector, int left, int right, int& threshold) {
             parallel_sort(vector, L, right, threshold);
         }
     }
-
-    #pragma omp taskwait
 }
 
 void parallel_quicksort(vector<int>& vector, int& threshold) {
     #pragma omp parallel
     {
         #pragma omp single  // Start by making 1 thread
-        {
-            parallel_sort(vector, 0, vector.size() - 1, threshold);
-        }
+        parallel_sort(vector, 0, vector.size() - 1, threshold);
+        #pragma omp taskwait
     }
 }
 
@@ -138,30 +142,38 @@ void write_results_to_file(std::vector<int>& sizes, std::vector<double>& serial_
     outfile.close();
 }
 
-bool is_sorted(vector<int>& vector)
+bool is_sorted(vector<int>& vector, int& error_amount)
 {
+    bool is_sorted = true;
     for (int i = 1; i < static_cast<int>(vector.size()); i++) {
         if (vector[i] < vector[i-1]) {
-            return false;
+            is_sorted = false;
+            error_amount++;
+            
+            cout << "[ ..., " << i-1 << ", " << i << ", " << i+1 << ", ... ]" << endl;
+            cout << "[ ..., " << vector[i-1] << ", " << vector[i] << ", " << vector[i+1] << ", ... ]" << endl;
         }
     }
 
-    return true;
+    return is_sorted;
 }
 
 // MAIN
 int main() {
-    omp_set_num_threads(72);
+    omp_set_num_threads(48);
     
-    std::vector<int> sizes = {25000000 ,50000000 ,100000000, 250000000, 500000000}; //0.1GB, 0.2 GB, 0.4 GB, 1 GB, 2GB
-    // std::vector<long long> sizes = {10000, 50000, 100000, 200000, 500000};
+    std::vector<int> sizes = {2500000 ,5000000 ,10000000, 25000000, 50000000}; //0.1GB, 0.2 GB, 0.4 GB, 1 GB, 2GB, ALLES GEDEELD DOOR 10
+    // std::vector<int> sizes = {10000, 50000, 100000, 200000, 500000};
     std::vector<double> serial_times{};
     std::vector<double> parallel_times{};
 
     for (int size : sizes) {
-        std::vector<int> dataset = generate_random_dataset(size);
+        // std::vector<int> dataset = generate_random_dataset(size);
+        // std::vector<int> parallel_dataset = dataset;
+        
+        std::vector<int> dataset = generate_dataset(size);
+        shuffle_dataset(dataset);
         std::vector<int> parallel_dataset = dataset;
-        // shuffle_dataset(dataset);
 
         // std::cout << "Array size: " << size << std::endl;
 
@@ -175,8 +187,9 @@ int main() {
 
         serial_times.push_back(serial_time);
         
-        if (!is_sorted(dataset)) {
-            std::cerr << "Error: Sequential mergesort failed!" << std::endl;
+        int error_amount = 0;
+        if (!is_sorted(dataset, error_amount)) {
+            std::cerr << "Error: quicksort failed! " << error_amount << " error(s)" << std::endl;
             return -1;
         }
 
@@ -193,8 +206,9 @@ int main() {
         
         parallel_times.push_back(parallel_time);
 
-        if (!is_sorted(parallel_dataset)) {
-            std::cerr << "Error: parallel mergesort (sequential merge) failed!" << std::endl;
+        int parallel_error_amount = 0;
+        if (!is_sorted(parallel_dataset, parallel_error_amount)) {
+            std::cerr << "Error: parallel quicksort failed! " << parallel_error_amount << " error(s)" << std::endl;
             return -1;
         }
     }
