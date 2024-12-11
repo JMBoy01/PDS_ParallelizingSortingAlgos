@@ -2,9 +2,9 @@
 #SBATCH --cluster=wice
 #SBATCH --partition=bigmem
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=72
 #SBATCH --account=lp_h_pds_iiw
-#SBATCH --time=03:00:00
+#SBATCH --time=10:00:00
 #SBATCH --error="%x.e%A"
 #SBATCH --output="%x.o%A"
 

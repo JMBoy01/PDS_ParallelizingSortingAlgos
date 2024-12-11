@@ -95,10 +95,11 @@ void parallelMergeSortParallelMerge(std::vector<int>& array, int depth, int max_
 }
 
 int main() {
-    omp_set_num_threads(36);
-    int max_depth = 5;
+    omp_set_num_threads(72);
+    int max_depth = 6;
     //int max_depth = 3;
-    //std::vector<int> sizes = {1000, 10000, 100000, 1000000};
+    //std::vector<int> sizes = {1000, 10000, 100000};
+    std::cout << "Total threads set: " << omp_get_max_threads() << std::endl;
     std::vector<int> sizes = {25000000 ,50000000 ,100000000, 250000000, 500000000}; //0.1GB, 0.2 GB, 0.4 GB, 1 GB, 2GB
 
     for (int size : sizes) {
